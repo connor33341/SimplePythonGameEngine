@@ -146,5 +146,62 @@ class GLWindow():
         Logger.info("Iterating")
         for i in range(6):
             Logger.info(f"Index: {i}")
+            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 128, 128, 0, GL_RGB, GL_FLOAT, None)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR) # be sure to set minification filter to mip_linear 
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        # generate mipmaps for the cubemap so OpenGL automatically allocates the required memory.
+        glGenerateMipmap(GL_TEXTURE_CUBE_MAP)
+        Logger.info("Running quasi monte-carlo simulation on the environment lighting to create a prefilter")
+        Logger.info("Getting Prefilter Shader")
+        self.PrefilterShader = self.BulkShader.GetByName("PrefilterShader")
+        self.PrefilterShader.UseShader()
+        self.PrefilterShader.SetInt("environmentMap", 0)
+        self.PrefilterShader.SetMat4("projection", self.CaptureProjection)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_CUBE_MAP, self.ENVCubemap)
+        glBindFramebuffer(GL_FRAMEBUFFER, self.CaptureFBO)
+        self.MaxMipLevels = 5
+        Logger.info(f"MaxMipLevels: {self.MaxMipLevels}")
+        for Mip in range(self.MaxMipLevels):
+            Logger.info(f"Index: {Mip}")
+            MipWidth = int(128 * pow(0.5,Mip))
+            MipHeight = int(128 * pow(0.5,Mip))
+            glBindRenderbuffer(GL_RENDERBUFFER, self.CaptureRBO)
+            glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, MipWidth, MipHeight)
+            glViewport(0, 0, MipWidth, MipHeight)
+            Roughness = Mip/(self.MaxMipLevels - 1)
+            self.PrefilterShader.SetFloat("roughness", Roughness)
+            for i in range(6):
+                Logger.info(f"SettingView: {i}")
+                self.PrefilterShader.SetMat4("view", self.CaptureViews[i])
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, self.PrefilterMap, Mip)
+                glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+                RenderCube()
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        Logger.info("Generate 2D LUST from BRDF equations used")
+        self.BRDFLUTTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, self.BRDFLUTTexture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RG16F, 512, 512, 0, GL_RG, GL_FLOAT, None)
+        # be sure to set wrapping mode to GL_CLAMP_TO_EDGE
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        Logger.info("Re-configure framebuffer object and render screen-space quad with BRDF shader")
+        glBindFramebuffer(GL_FRAMEBUFFER, self.CaptureFBO)
+        glBindRenderbuffer(GL_RENDERBUFFER, self.CaptureRBO)
+        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512)
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, self.BRDFLUTTexture, 0)
+
+        glViewport(0, 0, 512, 512)
+        #brdfShader.use()
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
+        #renderQuad()
+
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+
 
 
