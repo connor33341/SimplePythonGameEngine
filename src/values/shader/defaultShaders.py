@@ -1,0 +1,63 @@
+DefaultShaders = [
+        [
+            [
+                ["INT","irradianceMap",0],
+                ["INT","prefilterMap",1],
+                ["INT","brdfLUT",2],
+                ["INT","albedoMap",3],
+                ["INT","normalMap",4],
+                ["INT","metallicMap",5],
+                ["INT","roughnessMap",6],
+                ["INT","aoMap",7]
+            ],
+            "PBR_Shader",
+            "src\lib\shaders\default\pbr.vs",
+            "src\lib\shaders\default\pbr.fs",
+            None
+        ],
+        [
+            [
+
+            ],
+            "EquirectangularToCubemapShader",
+            "src\lib\shaders\default\cubemap.vs",
+            "src\lib\shaders\default\equirectangular_to_cubemap.fs",
+            None
+        ],
+        [
+            [
+
+            ],
+            "IrradianceShader",
+            "src\lib\shaders\default\cubemap.vs",
+            "src\lib\shaders\default\irradiance_convolution.fs",
+            None
+        ],
+        [
+            [
+
+            ],
+            "PrefilterShader",
+            "src\lib\shaders\default\cubemap.vs",
+            "src\lib\shaders\default\prefilter.fs",
+            None
+        ],
+        [
+            [
+
+            ],
+            "BRDFShader",
+            "src\lib\shaders\default\\brdf.vs",
+            "src\lib\shaders\default\\brdf.fs",
+            None
+        ],
+        [
+            [
+                ["INT","environmentMap",0]
+            ],
+            "BackgroundShader",
+            "src\lib\shaders\default\\background.vs",
+            "src\lib\shaders\default\\background.fs",
+            None
+        ]
+    ]
