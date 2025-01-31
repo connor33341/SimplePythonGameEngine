@@ -2,7 +2,8 @@ from engine.window import GLWindowSettings, GLWindow
 from values.shader.shaderConfig import ShaderConfig
 from values.shader.defaultShaders import DefaultShaders
 from utils.shader.bulkLoad import BulkLoadShader
-from utils.textures.quickPBR import QuickPBR
+from utils.textures.quickPBR import QuickPBR, DEFAULT
+from lib.textures.loadTexture import LoadHDRTexture
 import logging
 import uuid
 
@@ -19,5 +20,6 @@ if __name__ == "__main__":
     BulkShader = BulkLoadShader(DefaultShaders)
     BulkShader.Load()
     GoldMaterial = QuickPBR("gold").GetTexture()
-    
+    RoomHDR = LoadHDRTexture(f"{DEFAULT}\\hdr\\room.hdr")
+
     Logger.info("Ended")

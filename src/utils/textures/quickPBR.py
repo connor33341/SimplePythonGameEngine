@@ -1,8 +1,12 @@
 from values.pbr.pbrTexture import PBRTexture
 import os
 
+DEFAULT = "src\\assets"
+def ReturnDefault() -> str:
+    return DEFAULT
+
 class QuickPBR:
-    def __init__(self,TextureName: str,TextureDirectory: str = "src\\assets\\pbr\\",TextureExtension: str = ".png",AutoLoad: bool = True) -> None: #PBRTexture:
+    def __init__(self,TextureName: str,TextureDirectory: str = f"{DEFAULT}\\pbr\\",TextureExtension: str = ".png",AutoLoad: bool = True) -> None: #PBRTexture:
         self.TextureDirectory = TextureDirectory
         self.TextureName = TextureName
         self.TexturePath = os.path.join(TextureDirectory,TextureName)+"\\"

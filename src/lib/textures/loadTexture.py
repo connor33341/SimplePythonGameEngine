@@ -38,3 +38,25 @@ def LoadTexture(Path: str, ResourcePath: str = "") -> int:
         Logger.error(Error)
     
     return TextureID
+
+def LoadHDRTexture(Path: str, ResourcePath: str = "") -> int:
+    ImageProcessing = ImageUtils(ResourcePath)
+    #Path = ResourcePath+Path
+    Logger.info(f"Loading HDR Image: {Path}")
+    HDRID = 0
+
+    try:
+        Image = ImageProcessing.LOAD_HDR_IMAGE(Path)
+        Height, Width, nrComponents = Image.shape
+        HDRTexture = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_2D, HDRTexture)
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB16F, Width, Height, 0, GL_RGB, GL_FLOAT, numpy.flip(Image,axis=0))
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+        Logger.info("Loading Complete")
+    except Exception as Error:
+        Logger.error(Error)
+    
+    return HDRID
