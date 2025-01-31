@@ -135,10 +135,16 @@ class GLWindow():
         Logger.info("Itterating")
         for i in range(6):
             Logger.info(f"Index: {i}")
-            self.IrradianceShader.setMat4("view", self.CaptureViews[i])
+            self.IrradianceShader.SetMat4("view", self.CaptureViews[i])
             glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, self.IrradianceMap, 0)
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT)
             RenderCube()
-            
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        Logger.info("Creating pre-filter to cubemap")
+        self.PrefilterMap = glGenTextures(1)
+        glBindTexture(GL_TEXTURE_CUBE_MAP, self.PrefilterMap)
+        Logger.info("Iterating")
+        for i in range(6):
+            Logger.info(f"Index: {i}")
 
 
