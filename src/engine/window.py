@@ -4,6 +4,7 @@ from OpenGL.GL import *
 from glfw.GLFW import *
 from glfw import _GLFWwindow as GLFWwindow
 from PIL import Image
+from utils.shader.bulkLoad import BulkLoadShader
 
 import numpy
 import glm
@@ -48,7 +49,28 @@ class GLWindow():
             glBindRenderbuffer(GL_RENDERBUFFER,self.CaptureRBO)
             glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH_COMPONENT24, 512, 512)
             glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_RENDERBUFFER, self.CaptureRBO)
-            Logger.info("Finished")
+            Logger.info("Setting cubemap to render")
+            self.ENVCubemap = glGenTextures(1)
+            glBindTexture(GL_TEXTURE_CUBE_MAP, self.ENVCubemap)
+            Logger.info("Iterating")
+            for i in range(6):
+                Logger.info(f"CUBE_MAP_POSITIVE_X_OFFSET: {i}")
+                glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB16F, 512, 512, 0, GL_RGB, GL_FLOAT, None)
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE)
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+            glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            Logger.info(f"Setting up projection and view matrices")
+            self.CaptureProjection = glm.perspective(glm.radians(90.0), 1.0, 0.1, 10.0)
+            self.CaptureViews = glm.array(
+                glm.lookAt(glm.vec3(0.0, 0.0, 0.0), glm.vec3( 1.0,  0.0,  0.0), glm.vec3(0.0, -1.0,  0.0)),
+                glm.lookAt(glm.vec3(0.0, 0.0, 0.0), glm.vec3(-1.0,  0.0,  0.0), glm.vec3(0.0, -1.0,  0.0)),
+                glm.lookAt(glm.vec3(0.0, 0.0, 0.0), glm.vec3( 0.0,  1.0,  0.0), glm.vec3(0.0,  0.0,  1.0)),
+                glm.lookAt(glm.vec3(0.0, 0.0, 0.0), glm.vec3( 0.0, -1.0,  0.0), glm.vec3(0.0,  0.0, -1.0)),
+                glm.lookAt(glm.vec3(0.0, 0.0, 0.0), glm.vec3( 0.0,  0.0,  1.0), glm.vec3(0.0, -1.0,  0.0)),
+                glm.lookAt(glm.vec3(0.0, 0.0, 0.0), glm.vec3( 0.0,  0.0, -1.0), glm.vec3(0.0, -1.0,  0.0))
+            )
 
         except Exception as Error:
             Logger.error(Error)
@@ -60,3 +82,11 @@ class GLWindow():
     
     def SetScrollCallback(self,Callback) -> None:
         glfwSetScrollCallback(self.Window, Callback)
+
+    def SetupEquirectangularToCubemapShader(self,BulkShader: BulkLoadShader, HDRTexture: int) -> None:
+        self.EquirectangularToCubemapShader = BulkShader.GetByName("EquirectangularToCubemapShader")
+        self.EquirectangularToCubemapShader.UseShader()
+        self.EquirectangularToCubemapShader.SetInt("equirectangularMap",0)
+        self.EquirectangularToCubemapShader.SetMat4("projection",self.CaptureProjection)
+        glActiveTexture(GL_TEXTURE0)
+        glBindTexture(GL_TEXTURE_2D,HDRTexture)
