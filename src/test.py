@@ -21,6 +21,6 @@ if __name__ == "__main__":
     BulkShader.Load()
     GoldMaterial = QuickPBR("gold").GetTexture()
     RoomHDR = LoadHDRTexture(f"{DEFAULT}\\hdr\\room.hdr")
-    Window.SetupEquirectangularToCubemapShader(BulkShader,RoomHDR)
-
+    Window.CreateSkyBox(BulkShader,RoomHDR)
+    Window.SetupPBR()
     Logger.info("Ended")

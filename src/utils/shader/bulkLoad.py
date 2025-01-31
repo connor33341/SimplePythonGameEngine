@@ -30,6 +30,6 @@ class BulkLoadShader:
     def GetByName(self,Name: str) -> Shader:
         for ShaderObject in self.LoadedShaders:
             if isinstance(ShaderObject, list) or isinstance(ShaderObject, dict):
-                print(f"List {ShaderObject}")
+                #print(f"List {ShaderObject}")
                 if str(ShaderObject[0]) == Name:
                     return ShaderObject[2]
